@@ -15,11 +15,11 @@ class OhmsLawInputScreen(GridLayout):
         super(OhmsLawInputScreen, self).__init__(**kwargs)
         self.cols = 1
         self.rows = 10
-        title = Label(text= "Ohm's law solver!", font_size="32sp", color=(1, 0.8, 0), bold=True, size_hint=(1, 0.5))
+        title = Label(text="Ohm's law solver!", font_size="32sp", color=(1, 0.8, 0), bold=True, size_hint=(1, 0.5))
         self.add_widget(title)
         instructions = Label(text="Enter known values (minimum 2): ", font_size="20sp", bold=True, size_hint=(1, 0.5))
         self.add_widget(instructions)
-        self.voltage = LabelAndInput("Volatage (V - volts)", (1, 0, 0))
+        self.voltage = LabelAndInput("Voltage (V - volts)", (1, 0, 0))
         self.current = LabelAndInput("Current (I - amps)", (0, 1, 0))
         self.resistance = LabelAndInput("Resistance (R - ohms)", (0.5, 0.5, 0.5))
         self.power = LabelAndInput("Power (P - watts)", (1, 0, 1))
@@ -53,6 +53,8 @@ class OhmsLawInputScreen(GridLayout):
         i = values[1]
         r = values[2]
         p = values[3]
+        answer = ""
+        work = ""
 
         # Target is Voltage
         if target == "v":
@@ -90,7 +92,7 @@ class OhmsLawInputScreen(GridLayout):
                     work = "i = p/v"
 
             elif p != 0 and r != 0:
-                i = math.sqrt(p) /r
+                i = math.sqrt(p) / r
                 work = "i = sqrt(p) /r"
             else:
                 i = "invalid input"
@@ -142,13 +144,9 @@ class OhmsLawInputScreen(GridLayout):
             # answer  rounded string
             answer = f"Power is: {round(p, 4)} watts"
 
-
-        #displayed stuff
+        # displayed stuff
         self.answer.text = answer
         self.formula.text = work
-
-
-
 
 
 class ButtonBox(BoxLayout):
