@@ -1,3 +1,4 @@
+#Original design by LeMaster Tech
 import pygame
 pygame.init()
 import os

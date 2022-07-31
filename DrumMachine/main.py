@@ -1,3 +1,4 @@
+#Original design by LeMaster Tech
 import pygame
 from pygame import mixer
 

@@ -1,3 +1,5 @@
+# original design by LeMaster Tech
+
 import math
 from functools import partial
 from kivy.app import App
