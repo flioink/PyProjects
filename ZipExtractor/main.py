@@ -1,25 +1,36 @@
-from zipfile import ZipFile
 import os
-from functools import partial
+from zipfile import ZipFile
 from kivy.app import App
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
+from kivy.core.window import Window
+Window.size = (400, 300)
+
+# A simple program with GUI that can take multiple zip files and extracts them in a given folder:)
 
 class ZipExtractorScreen(GridLayout):
     def __init__(self, **kwargs):
         super(ZipExtractorScreen, self).__init__(**kwargs)
         self.cols = 1
-        self.rows = 5
-        title = Label(text="Zip Extractor", font_size="32sp", color=(1, 0.8, 0), bold=True, size_hint=(1, 0.5))
+        self.rows = 7
+        # Title label
+        title = Label(text="Zip Extractor", font_size="30sp", color=(1, 0.8, 0), bold=True, size_hint=(1, 0.5))
         self.add_widget(title)
-        instructions = Label(text="Enter source and destination folders: ", font_size="20sp", bold=True, size_hint=(1, 0.5))
+        # Instructions label
+        instructions = Label(text="Extract multiple zip files at once.", font_size="20sp", color=(0, 0.8, 0), bold=True, size_hint=(1, 0.5))
         self.add_widget(instructions)
-        self.sourceFolder = TextInput(text="Source folder path")
-        self.destinationFolder = TextInput(text="Destination folder path")
+        # Source label
+        srcLabel = Label(text="Enter the source folder: ", font_size="20sp", bold=True, size_hint=(1, 0.5))
+        self.add_widget(srcLabel)
+        self.sourceFolder = TextInput()
+        # Destination label
+        destLabel = Label(text="Enter the destination folder: ", font_size="20sp", bold=True, size_hint=(1, 0.5))
+        self.destinationFolder = TextInput()
         self.add_widget(self.sourceFolder)
+        self.add_widget(destLabel)
         self.add_widget(self.destinationFolder)
         self.buttons = ButtonBox()
         self.add_widget(self.buttons)
@@ -60,7 +71,7 @@ class ButtonBox(BoxLayout):
         super(ButtonBox, self).__init__(**kwargs)
         self.cols = 1
         self.rows = 1
-        self.extract = Button(text="Extract!", color=(1, 0, 0))
+        self.extract = Button(text="Extract!", font_size="34sp", bold=True, color=(0, 0.8, 0))
         self.add_widget(self.extract)
 
 
