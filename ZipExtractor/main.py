@@ -7,9 +7,9 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
 from kivy.core.window import Window
-Window.size = (400, 300)
-
 # A simple program with GUI that can take multiple zip files and extracts them in a given folder:)
+# Main window size
+Window.size = (400, 300)
 
 class ZipExtractorScreen(GridLayout):
     def __init__(self, **kwargs):
@@ -52,9 +52,9 @@ class ZipExtractorScreen(GridLayout):
                 if file.endswith(".zip"):
                     zipped.append(file)
             # construct a list of paths to each zip file
-            for file in zipped:
-                fullPathName = os.path.join(path, file)
-                fullPath.append(fullPathName)
+                    fullPathName = os.path.join(path, file)
+                    fullPath.append(fullPathName)
+
             # extract and count all the files
             for file in fullPath:
                 with ZipFile(file, "r") as zipObj:
