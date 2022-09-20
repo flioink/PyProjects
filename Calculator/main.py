@@ -1,5 +1,5 @@
+# origianl design by Nature Of Technology
 from kivy.app import App
-
 from kivy.core.window import Window
 from kivy.uix.widget import Widget
 from kivy.lang.builder import Builder

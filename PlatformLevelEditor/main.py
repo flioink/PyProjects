@@ -1,3 +1,4 @@
+# Original design by LeMasterTech
 import pygame
 pygame.init()
 
