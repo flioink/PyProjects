@@ -1,0 +1,39 @@
+<ChangerGUI>
+    BoxLayout:
+        orientation: "vertical"
+        size: root.width, root.height
+
+        Label:
+            id: linkLabel
+            text: "Enter Youtube URL:"
+            size_hint: 1, 0.1
+        GridLayout:
+            cols: 2
+            rows: 1
+            size_hint: 1, 0.1
+            TextInput:
+                id: urlBox
+                text: ""
+                #font_name: "Lcd.ttf"
+                font_size: 14
+                multiline: False
+                halign: "left"
+                size_hint: 1, 0.1
+                background_color: (20/255, 20/255, 30/255)
+                foreground_color: (1, 1, 1, 1)
+
+            Button:
+                text: "Clear URL"
+                #font_size: 32
+                on_press: root.clearURL()
+                #valign: 'middle'
+                size_hint: 0.3, 0.1
+
+
+
+        Button:
+            text: "Download!"
+            #font_size: 32
+            on_press: root.downloader()
+            valign: 'middle'
+            size_hint: 1, 0.1
