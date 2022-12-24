@@ -3,8 +3,23 @@ from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.lang.builder import Builder
 from kivy.core.window import Window
+from functools import partial
 import os
-from pytube.cli import on_progress
+import pickle
+
+destination = ""
+
+try:
+    with open("downloads_location", "rb") as f:
+        destination = f.read()
+except FileNotFoundError:
+    if not os.path.exists("downloads_location"):
+        with open("downloads_location", "wb") as f:
+            f.write("D:\\Downloads\\YOUTUBE_DOWNLOADS")
+
+except OSError:
+    destination = "D:\\Downloads\\YOUTUBE_DOWNLOADS"
+
 
 # width & height of window
 Window.size = (500, 300)
@@ -18,26 +33,29 @@ class DownloaderGUI(Widget):
         self.videObj = None
         self.warnText1 = "Must Have A Destination Folder!"
 
-    def downloader(self):
+    def initDestination(self):
+        self.ids.destinationBox = destination
 
-        videoURL = self.ids.urlBox.text
-        downloadFolder = self.ids.destinationBox.text
-        print(videoURL, downloadFolder)
-        if videoURL != "":
-            self.videObj = YouTube(videoURL, on_progress_callback=on_progress)
+    def downloader(self):
+        self.background_color = (1, 0, 0, 1)
+        try:
+            videoURL = self.ids.urlBox.text
+            downloadFolder = destination
+            self.ids.destinationBox.text = destination
+
+            self.videObj = YouTube(videoURL, on_progress_callback=partial(self.updateProgressBar, self))
             self.stream = self.videObj.streams.get_highest_resolution()
             self.ids.linkLabel.text = "Enter Youtube URL:"
-        else:
-            self.ids.linkLabel.text = "No link provided, action cancelled!"
 
-        if os.path.exists(downloadFolder) and videoURL != "":
-            self.ids.folderLabel.text = "Enter Download Folder:"
-            self.stream.download(downloadFolder)
-            self.ids.bar.value = 1.0
-            self.ids.urlBox.text = ""
+            if os.path.exists(downloadFolder):
 
-        else:
-            self.ids.folderLabel.text = "No folder provided, action cancelled!"
+                self.ids.folderLabel.text = "Enter Download Folder:"
+                self.stream.download(downloadFolder)
+                self.ids.urlBox.text = ""
+
+        except Exception as e:
+            self.ids.folderLabel.text = "Invalid YouTube URL or download folder not found!"
+
 
     def clearURL(self):
         self.ids.urlBox.text = ""
@@ -45,6 +63,11 @@ class DownloaderGUI(Widget):
 
     def clearDest(self):
         self.ids.destinationBox.text = ""
+
+    def updateProgressBar(self, stream, chunk, fileHandle, remaining):
+        highestResolutionStream = self.videObj.streams.get_highest_resolution()
+        progress = (highestResolutionStream.filesize - remaining) / highestResolutionStream.filesize
+        self.ids.bar.value = progress
 
 
 class YouTubeDownloaderApp(App):
