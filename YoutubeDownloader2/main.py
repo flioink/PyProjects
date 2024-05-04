@@ -5,6 +5,7 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 import os
 from audio_extract import extract_audio
+from pytube.cli import on_progress
 
 
 # check for previously saved default file
@@ -107,7 +108,7 @@ class YoutubeDownloader(ttk.Frame):
             bootstyle=SUCCESS,
             width=10)
 
-        submit_btn.pack(side=RIGHT, padx=5)
+        submit_btn.pack(side=LEFT, padx=5)
 
 
         audio_msg = ttk.Label(master=self.container_2, text="Convert the last downloaded file to mp3")
@@ -115,7 +116,7 @@ class YoutubeDownloader(ttk.Frame):
 
     # info label
     def create_info_label(self):
-        self.info_label = ttk.Label(master=self, text="Download status:")
+        self.info_label = ttk.Label(master=self, text="Download status: not downloaded")
         self.info_label.pack()
 
     # pressing the download
@@ -125,7 +126,7 @@ class YoutubeDownloader(ttk.Frame):
 
         print("Link: ", self.url.get())
         print("Dest: ", self.path)
-        self.info_label.configure(text="Download status: Complete!")
+
         self.url.set(value="")
 
     # check if the link works
@@ -139,9 +140,10 @@ class YoutubeDownloader(ttk.Frame):
 
             try:  # check if video can be downloaded
 
-                yt = YouTube(self.url.get(),
-                             on_progress_callback=self.update_progress_bar,
-                             on_complete_callback=self.on_complete_callback)
+                yt = YouTube(self.url.get())
+
+                yt.register_on_progress_callback(self.update_progress_bar)
+                yt.register_on_complete_callback(self.on_complete_callback)
 
                 self.stream = yt.streams.get_highest_resolution()
                 self.clip_name = yt.title + ".mp4"
@@ -191,38 +193,36 @@ class YoutubeDownloader(ttk.Frame):
             print("Empty Field")
 
     # progress bar gauge
-    def update_progress_bar(self, *args):
-        pass
-        # self.info_label.config(text="Downloading, please wait...")
-        # size = self.stream.filesize - bytes_remaining
-        # print("size: ", size)
-        # percent = 0
-        # while percent <= 100:
-        #     progress = percent
-        #     percent = self.percent(bytes_remaining, size)
-        #
-        #     print(progress)
+    def update_progress_bar(self, stream, data_chunk, bytes_remaining):
+        total_size = self.stream.filesize
+        bytes_downloaded = total_size - bytes_remaining
+        completed = bytes_downloaded / total_size * 100
+        print(completed)
+        self.progress_bar["value"] = completed
 
     def percent(self, tem, total):
         perc = (float(tem) / float(total)) * float(100)
         return perc
 
-    # put the progress bar at 100 when download is complete
+    # set info label to complete
     def on_complete_callback(self, *args):
-        self.progress_bar["value"] = 100
+        self.info_label.configure(text="Download status: Complete!")
 
     # clear the progress bar when the entry is clicked
     def clear_meter(self, event):
         self.progress_bar["value"] = 0
-        self.info_label.configure(text="Download status:")
+        self.info_label.configure(text="Download status: not downloaded")
 
     def convert_to_audio(self):
         print("Converting")
         if self.clip_name != "":
             audio_name = self.clip_name.split(".")[0]
-            extract_audio(os.path.join(path, self.clip_name), os.path.join(path, audio_name))
-            print(os.path.join(path, self.clip_name + "123"))
-            self.clip_name = ""
+            if os.path.exists(os.path.join(path, self.clip_name)):
+                extract_audio(os.path.join(path, self.clip_name), os.path.join(path, audio_name))
+                print(os.path.join(path, self.clip_name + "123"))
+                self.clip_name = ""
+            else:
+                print("The file appears to be missing.")
         else:
             print("clip must be downloaded first")
 
