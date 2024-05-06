@@ -3,10 +3,9 @@ from pytube import YouTube
 from pytube.exceptions import VideoUnavailable
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
+from tkinter import filedialog
 import os
 from audio_extract import extract_audio
-from pytube.cli import on_progress
-
 
 # check for previously saved default file
 path = ""
@@ -22,6 +21,7 @@ except FileNotFoundError:
     path = os.path.abspath(r"C:\\")  # set C:\ as default if no file is present
     with open("settings.txt", "w") as file:
         file.writelines(path)
+
 
 # print(path)
 
@@ -40,8 +40,8 @@ class YoutubeDownloader(ttk.Frame):
         hdr = ttk.Label(master=self, text=hdr_txt, width=50)
         hdr.pack(fill=X, pady=10)
         # entries
-        self.create_form_entry("URL", self.url)
-        self.create_form_entry("Destination Folder", self.destination_folder)
+        self.create_form_entry("URL", self.url, self.clear, "Clear")
+        self.create_form_entry("Destination Folder", self.destination_folder, self.open_file_dialog, "Browse")
         # button box
         self.create_button_box()
         # meter
@@ -56,7 +56,7 @@ class YoutubeDownloader(ttk.Frame):
         self.create_audio_box()
 
     # form entry setup
-    def create_form_entry(self, label, variable):
+    def create_form_entry(self, label, variable, cmd, btn_text):
         container = ttk.Frame(self)
         container.pack(fill=X, expand=YES, pady=5)
 
@@ -66,6 +66,14 @@ class YoutubeDownloader(ttk.Frame):
         entry = ttk.Entry(master=container, textvariable=variable)
         entry.pack(side=LEFT, padx=5, fill=X, expand=YES)
         entry.bind("<Button-1>", self.clear_meter)
+
+        dialog_btn = ttk.Button(
+            master=container,
+            text=btn_text,
+            command=cmd,
+            bootstyle=DANGER,
+            width=8)
+        dialog_btn.pack(side=RIGHT, padx=5)
 
     # button box setup
     def create_button_box(self):
@@ -77,7 +85,7 @@ class YoutubeDownloader(ttk.Frame):
             text="Get!",
             command=self.on_submit,
             bootstyle=SUCCESS,
-            width=6)
+            width=8)
 
         submit_btn.pack(side=RIGHT, padx=5)
         submit_btn.focus_set()
@@ -87,7 +95,7 @@ class YoutubeDownloader(ttk.Frame):
             text="Cancel",
             command=self.on_cancel,
             bootstyle=DANGER,
-            width=6)
+            width=8)
         cancel_btn.pack(side=RIGHT, padx=5)
 
         # Set default destination for files with check button
@@ -110,7 +118,6 @@ class YoutubeDownloader(ttk.Frame):
 
         submit_btn.pack(side=LEFT, padx=5)
 
-
         audio_msg = ttk.Label(master=self.container_2, text="Convert the last downloaded file to mp3")
         audio_msg.pack(side=LEFT, padx=5)
 
@@ -121,7 +128,7 @@ class YoutubeDownloader(ttk.Frame):
 
     # pressing the download
     def on_submit(self):
-        self.info_label.config(text="Downloading, please wait...")
+        # self.info_label.config(text="Downloading, please wait...")
         self.download()
 
         print("Link: ", self.url.get())
@@ -185,8 +192,7 @@ class YoutubeDownloader(ttk.Frame):
             print(default_folder)
 
             self.msg.config(text="Set!")
-            # self.after(500, self.default_msg.config(text="Set current destination as default"))
-            # self.check.config(value=1)
+
         else:
             self.msg.config(text="Field is empty!")
 
@@ -226,6 +232,20 @@ class YoutubeDownloader(ttk.Frame):
         else:
             print("clip must be downloaded first")
 
+    # opens a folder browser
+    def open_file_dialog(self):
+        folder_path = filedialog.askdirectory()
+        if folder_path:
+            print("Selected file:", folder_path)
+            self.destination_folder.set(folder_path)
+        else:
+            print("No file selected.")
+
+    # clear the url form
+    def clear(self):
+
+        self.url.set("")
+
     def on_cancel(self):
         self.quit()
 
@@ -234,6 +254,6 @@ if __name__ == "__main__":
     vid_file = os.path.join(path, "The Force Theme.mp4")
     output = os.path.join(path, "The Force Theme.mp4")
     print(vid_file, output)
-    app = ttk.Window("Youtube Video Downloader", "superhero", resizable=(False, False))
+    app = ttk.Window("Youtube Video Downloader", "darkly", resizable=(False, False))
     YoutubeDownloader(app, path)
     app.mainloop()
