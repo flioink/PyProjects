@@ -1,6 +1,6 @@
 import validators
 from pytube import YouTube
-from pytube.exceptions import VideoUnavailable
+from pytube.exceptions import VideoUnavailable, RegexMatchError
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from tkinter import filedialog
@@ -147,7 +147,7 @@ class YoutubeDownloader(ttk.Frame):
 
             try:  # check if video can be downloaded
 
-                yt = YouTube(self.url.get())
+                yt = YouTube(self.url.get(), use_oauth=False)
 
                 yt.register_on_progress_callback(self.update_progress_bar)
                 yt.register_on_complete_callback(self.on_complete_callback)
@@ -156,6 +156,9 @@ class YoutubeDownloader(ttk.Frame):
                 self.clip_name = yt.title + ".mp4"
                 print(self.clip_name)
                 self.stream.download(self.path)
+
+            except RegexMatchError:
+                print("Regex Match Error")
 
             except VideoUnavailable:
                 print("The video is either unavailable or requires a login.")
@@ -251,9 +254,7 @@ class YoutubeDownloader(ttk.Frame):
 
 
 if __name__ == "__main__":
-    vid_file = os.path.join(path, "The Force Theme.mp4")
-    output = os.path.join(path, "The Force Theme.mp4")
-    print(vid_file, output)
+
     app = ttk.Window("Youtube Video Downloader", "darkly", resizable=(False, False))
     YoutubeDownloader(app, path)
     app.mainloop()
