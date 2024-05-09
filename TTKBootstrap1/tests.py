@@ -125,7 +125,7 @@ def climbers():
 
         print(f"{percentage}% are going to {key}. ")
     # 10 10 5 1 100 12 26 17 37 40 78
-    # 11gr
+    
 
 
 def stars():
@@ -156,7 +156,7 @@ def basketball():
     total_number_of_games = 0
     while True:
         tournament_name = str(input("Enter the name of the tournament: "))
-        if tournament_name == "END":
+        if tournament_name == "End of tournaments":
             break
 
         number_of_games = int(input("Enter the number of games: "))
@@ -189,18 +189,5 @@ def basketball():
     print(f"{loss_percentage}% matches lost.")
 
 
-# Dunkers
-# 2
-# 75
-# 65
-# 56
-# 73
-# Fire Girls
-# 3
-# 67
-# 34
-# 83
-# 98
-# 66
-# 45
-basketball()
+
+
