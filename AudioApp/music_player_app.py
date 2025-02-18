@@ -106,6 +106,11 @@ class AudioApp(QWidget):
         self.speed_slider.setMinimum(50)
         self.speed_slider.setMaximum(150)
         self.speed_slider.setValue(100)
+        self.speed_slider.setSingleStep(1)
+        self.speed_slider.setPageStep(10)
+        self.speed_slider.setTracking(True)
+        self.speed_slider.setSliderDown(False)
+
 
         # song duration
         self.time_display = QLabel("00:00 / 00:00")
@@ -134,7 +139,7 @@ class AudioApp(QWidget):
         self.volume_bar.setTracking(True)
         self.volume_bar.setSliderDown(False)
 
-        # slider layout
+        # progress slider layout
         progress_bar_layout = QVBoxLayout()
         adjust_settings_layout = QHBoxLayout()
 
@@ -210,6 +215,8 @@ class AudioApp(QWidget):
         # speed slider
         self.speed_slider.sliderMoved.connect(self.update_speed)
         self.file_list.itemDoubleClicked.connect(self.play_new_song)
+        self.speed_slider.valueChanged.connect(self.update_speed)
+
         # volume slider
         self.volume_bar.sliderMoved.connect(self.volume_control)
         self.volume_bar.valueChanged.connect(self.volume_control)
