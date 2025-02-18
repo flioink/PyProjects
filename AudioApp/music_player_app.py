@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QLabel,\
                              QListWidget, QFileDialog, QSlider, QVBoxLayout, QHBoxLayout, QMessageBox
 from PyQt6.QtCore import Qt, QUrl, QTimer
 from PyQt6.QtMultimedia import  QMediaPlayer, QAudioOutput
+
 import json
 
 
@@ -22,16 +23,12 @@ class AudioApp(QWidget):
         self.loop_mode = self.loop_modes_list[0]
         self.loop_index = 0
 
-
         # The file list
         self.file_list = QListWidget()
 
         # Enable drag & drop
         self.file_list.setAcceptDrops(True)
         self.file_list.setDragEnabled(False)
-        # Enable playlist internal drag & drop
-        #self.file_list.setDragDropMode(QListWidget.DragDropMode.InternalMove)
-        #self.file_list.setDefaultDropAction(Qt.DropAction.MoveAction)
 
         # Enable main window drag and drop
         self.setAcceptDrops(True)
@@ -39,7 +36,7 @@ class AudioApp(QWidget):
         self.settings()
         self.init_UI()
         self.event_handler()
-        self.load_playlist()
+        self.load_last_playlist()
 
     # settings
     def settings(self):
@@ -74,6 +71,9 @@ class AudioApp(QWidget):
         self.btn_previous.setFixedSize(100, 80)
         self.btn_next.setFixedSize(100, 80)
         self.btn_loop.setFixedSize(100, 80)
+        # disable buttons on start
+        self.btn_pause.setDisabled(True)
+        self.btn_reset.setDisabled(True)
 
         # add to layout top
         self.playback_buttons_layout_top.addWidget(self.btn_play)
@@ -93,10 +93,10 @@ class AudioApp(QWidget):
         self.playback_buttons_layout_bottom.setSpacing(5)  # Reduce space between buttons
         self.playback_buttons_layout_bottom.setContentsMargins(0, 0, 0, 0)  # Remove extra margins
 
+        # playlist buttons
         self.btn_save = QPushButton("Save Playlist")
-        # disable buttons on start
-        self.btn_pause.setDisabled(True)
-        self.btn_reset.setDisabled(True)
+        self.btn_load = QPushButton("Load Playlist")
+        self.btn_clear = QPushButton("Clear Playlist")
 
         # speed label
         self.slider_text = QLabel("Speed: 100%")
@@ -161,11 +161,14 @@ class AudioApp(QWidget):
 
         # playlist
         col1.addWidget(self.file_list)
+        # adding the buttons
 
-        col2.addWidget(self.btn_opener)
         col2.addLayout(self.playback_buttons_layout_top)
         col2.addLayout(self.playback_buttons_layout_bottom)
+        col2.addWidget(self.btn_opener)
         col2.addWidget(self.btn_save)
+        col2.addWidget(self.btn_load)
+        col2.addWidget(self.btn_clear)
 
         row.addLayout(col1, 4)
         row.addLayout(col2, 2)
@@ -210,6 +213,10 @@ class AudioApp(QWidget):
         # volume slider
         self.volume_bar.sliderMoved.connect(self.volume_control)
         self.volume_bar.valueChanged.connect(self.volume_control)
+        # clear playlist
+        self.btn_clear.clicked.connect(self.clear_playlist)
+        # load custom playlist
+        self.btn_load.clicked.connect(self.load_custom_playlist)
 
 
 
@@ -454,10 +461,27 @@ class AudioApp(QWidget):
     def set_slider_range(self, duration):
         self.progress_bar.setRange(0, duration)
 
+    def load_last_playlist(self):
+        if os.path.exists("last_playlist.json"):
+            with open("last_playlist.json", "r") as file:
+                try:
+                    last_playlist_data = json.load(file)
 
-    def load_playlist(self):
-        if os.path.exists("playlist.json"):
-            with open("playlist.json", "r") as file:
+                    last_playlist_name = last_playlist_data
+
+
+                except json.JSONDecodeError:
+                    print("Error reading last_playlist.json")
+                    return
+
+            if os.path.exists(last_playlist_name):
+                self.load_playlist(last_playlist_name)
+            else:
+                print(f"Playlist file '{last_playlist_name}' not found.")
+
+    def load_playlist(self, path):
+        if os.path.exists(path):
+            with open(path, "r") as file:
                 self.playlist = json.load(file)
             self.file_list.clear()
 
@@ -468,12 +492,20 @@ class AudioApp(QWidget):
 
     def save_playlist(self):
         if self.playlist:
-            json_object = json.dumps(self.playlist, indent=4)
+            playlist_name, _ = QFileDialog.getSaveFileName(self, "Save Playlist", "", "JSON Files (*.json)")
 
-            # Writing to sample.json
-            with open("playlist.json", "w") as outfile:
-                outfile.write(json_object)
-                QMessageBox.information(self, "Saving", "Saved current playlist.")
+            if playlist_name:
+                json_object = json.dumps(self.playlist, indent=4)
+
+                # Writing to sample.json
+                with open(playlist_name, "w") as outfile:
+                    outfile.write(json_object)
+                    QMessageBox.information(self, "Saving", f"Saved {playlist_name} playlist.")
+
+                # Set any saved playlist as default
+                with open("last_playlist.json", "w") as last_file:
+                    # use only json.dump method for passing info to json files, duh
+                    json.dump(os.path.basename(playlist_name), last_file)
 
     def seek_audio(self):
         position = self.progress_bar.value()
@@ -572,6 +604,34 @@ class AudioApp(QWidget):
 
         # remove from QlistWidget
         self.file_list.takeItem(self.file_list.row(selected_item[0]))
+
+    def clear_playlist(self):
+
+        msg = QMessageBox() # message box to warn you
+        msg.setIcon(QMessageBox.Icon.Warning)
+        msg.setText("Are you sure you want to clear the playlist?")
+        msg.setWindowTitle("Confirm Action")
+        msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+
+        response = msg.exec()  # This will return the button clicked
+        if response == QMessageBox.StandardButton.Yes:
+            self.playlist.clear()
+            self.file_list.clear()
+
+
+    def load_custom_playlist(self):
+
+        custom_playlist_file, _ = QFileDialog.getOpenFileName(filter="JSON Files (*.json)")
+        if os.path.exists(custom_playlist_file):
+
+            with open(custom_playlist_file, "r") as file:
+                self.playlist = json.load(file)
+            self.file_list.clear()
+
+            for idx, file in enumerate(self.playlist, start=1):
+                song_name = os.path.basename(file)
+                self.file_list.addItem(f"{idx}. {song_name}")
+
 
 
 
