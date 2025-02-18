@@ -4,6 +4,11 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButto
 from PyQt5.QtCore import Qt
 from requests import HTTPError
 
+try:
+    with open("api_key.txt", "r") as key_file:
+        key = key_file.readline()
+except FileNotFoundError:
+    print("API key not found!")
 
 class WeatherApp(QWidget):
     def __init__(self):
@@ -77,7 +82,7 @@ class WeatherApp(QWidget):
         self.get_weather_button.clicked.connect(self.get_weather)
 
     def get_weather(self):
-        api_key = "29f16ab14bda0ed436cd88bb133bb285"
+        api_key = key
         city = self.city_input.text()
         url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}"
 
